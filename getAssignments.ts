@@ -14,32 +14,28 @@ type AssignmentEntries = [keyof Assignments, Assignments[keyof Assignments]][];
 const getLowestPoints = (
   assignmentEntries: Readonly<AssignmentEntries>
 ): number => {
-  return assignmentEntries.reduce((acc, [, { storyPoints }]) => {
-    if (storyPoints < acc) {
-      acc = storyPoints;
-    }
-    return acc;
-  }, 100000);
+  const storyPoints = assignmentEntries.map(
+    ([, { storyPoints }]) => storyPoints
+  );
+  return Math.min(...storyPoints);
 };
 
 const getHighestDenied = (
   assignmentEntries: Readonly<AssignmentEntries>
 ): number => {
-  return assignmentEntries.reduce((acc, [, { denied }]) => {
-    if (denied > acc) {
-      acc = denied;
-    }
-    return acc;
-  }, 0);
+  const deniedCounts = assignmentEntries.map(([, { denied }]) => denied);
+  return Math.max(...deniedCounts);
 };
+
+interface GetEligibleDevsArgs {
+  assignments: Readonly<Assignments>;
+  preferences: Readonly<Preferences>;
+}
 
 const getEligibleDevs = ({
   assignments,
   preferences,
-}: {
-  assignments: Readonly<Assignments>;
-  preferences: Readonly<Preferences>;
-}): string[] => {
+}: GetEligibleDevsArgs): string[] => {
   const devsWithPreferences = Object.entries(preferences)
     .filter(([, preferences]) => preferences.length)
     .map(([dev]) => dev);
@@ -61,10 +57,7 @@ const getEligibleDevs = ({
 const chooseNextDev = ({
   assignments,
   preferences,
-}: {
-  assignments: Readonly<Assignments>;
-  preferences: Readonly<Preferences>;
-}): {
+}: GetEligibleDevsArgs): {
   selectedDev: string;
   notSelectedDevs: string[];
   wasRandomlyChosen: boolean;
@@ -196,6 +189,61 @@ const increasedDenied = ({
   }
 };
 
+export const assignAProject = ({
+  preferences,
+  projectsPoints,
+  assignments,
+  remainingProjects,
+}: {
+  preferences: Preferences;
+  projectsPoints: Readonly<ProjectPoints>;
+  assignments: Assignments;
+  remainingProjects: string[];
+}) => {
+  const { selectedDev, wasRandomlyChosen, notSelectedDevs } = chooseNextDev({
+    assignments,
+    preferences,
+  });
+
+  logSituation({
+    preferences,
+    selectedDev,
+    preferedProject: preferences[selectedDev][0],
+    assignments,
+    projectsPoints,
+  });
+
+  const preferedProject = preferences[selectedDev].shift();
+
+  increasedDenied({
+    wasRandomlyChosen,
+    preferences,
+    preferedProject,
+    notSelectedDevs,
+    assignments,
+    selectedDev,
+  });
+
+  // updates assignments with the prefered project
+  assignments[selectedDev].projects.push(preferedProject);
+  assignments[selectedDev].storyPoints += projectsPoints[preferedProject];
+  if (wasRandomlyChosen) {
+    assignments[selectedDev].chosenRandomly += 1;
+  } else {
+    assignments[selectedDev].chosenDeterministically += 1;
+  }
+
+  // updates preferences by removing selected project
+  for (const dev in preferences) {
+    preferences[dev] = preferences[dev].filter(
+      (project) => project !== preferedProject
+    );
+  }
+
+  // updates remaining projects
+  remainingProjects = remainingProjects.filter((p) => p !== preferedProject);
+};
+
 export const getAssignments = (
   projectsPoints: ProjectPoints,
   preferences: Preferences
@@ -211,48 +259,12 @@ export const getAssignments = (
   let remainingProjects = availableProjects;
 
   while (remainingProjects.length) {
-    const { selectedDev, wasRandomlyChosen, notSelectedDevs } = chooseNextDev({
-      assignments,
+    assignAProject({
       preferences,
-    });
-
-    logSituation({
-      preferences,
-      selectedDev,
-      preferedProject: preferences[selectedDev][0],
-      assignments,
       projectsPoints,
-    });
-
-    const preferedProject = preferences[selectedDev].shift();
-
-    increasedDenied({
-      wasRandomlyChosen,
-      preferences,
-      preferedProject,
-      notSelectedDevs,
       assignments,
-      selectedDev,
+      remainingProjects,
     });
-
-    // updates assignments with the prefered project
-    assignments[selectedDev].projects.push(preferedProject);
-    assignments[selectedDev].storyPoints += projectsPoints[preferedProject];
-    if (wasRandomlyChosen) {
-      assignments[selectedDev].chosenRandomly += 1;
-    } else {
-      assignments[selectedDev].chosenDeterministically += 1;
-    }
-
-    // updates preferences by removing selected project
-    for (const dev in preferences) {
-      preferences[dev] = preferences[dev].filter(
-        (project) => project !== preferedProject
-      );
-    }
-
-    // updates remaining projects
-    remainingProjects = remainingProjects.filter((p) => p !== preferedProject);
   }
 
   console.log("\n----------------- END -----------------\n\n\n");
