@@ -150,6 +150,32 @@ const logDeniedDevs = ({
   );
 };
 
+const getDeniedDev = ({
+  preferences,
+  preferedProject,
+  notSelectedDevs,
+  assignments,
+}: {
+  preferences: Readonly<Preferences>;
+  preferedProject: string;
+  notSelectedDevs: string[];
+  assignments: Readonly<Assignments>;
+}): string[] => {
+  let deniedDevs = [];
+  // increase denied if other dev were interested
+  for (const dev in preferences) {
+    const devPreferences = { ...preferences[dev] };
+    if (
+      devPreferences[0] === preferedProject &&
+      notSelectedDevs.includes(dev)
+    ) {
+      assignments[dev].denied += 1;
+      deniedDevs.push(dev);
+    }
+  }
+  return deniedDevs;
+};
+
 const increasedDenied = ({
   wasRandomlyChosen,
   preferences,
@@ -165,27 +191,21 @@ const increasedDenied = ({
   assignments: Assignments;
   selectedDev: string;
 }): void => {
-  let deniedDevs = [];
   if (wasRandomlyChosen) {
-    // increase denied if other dev were interested
-    for (const dev in preferences) {
-      const devPreferences = { ...preferences[dev] };
-      if (
-        devPreferences[0] === preferedProject &&
-        notSelectedDevs.includes(dev)
-      ) {
-        assignments[dev].denied += 1;
-        deniedDevs.push(dev);
-      }
-    }
-  }
-
-  if (deniedDevs.length) {
-    logDeniedDevs({
-      deniedDevs,
+    const deniedDevs = getDeniedDev({
+      preferences,
       preferedProject,
-      selectedDev,
+      notSelectedDevs,
+      assignments,
     });
+
+    if (deniedDevs.length) {
+      logDeniedDevs({
+        deniedDevs,
+        preferedProject,
+        selectedDev,
+      });
+    }
   }
 };
 
@@ -199,12 +219,11 @@ export const assignAProject = ({
   projectsPoints: Readonly<ProjectPoints>;
   assignments: Assignments;
   remainingProjects: string[];
-}) => {
+}): string[] => {
   const { selectedDev, wasRandomlyChosen, notSelectedDevs } = chooseNextDev({
     assignments,
     preferences,
   });
-
   logSituation({
     preferences,
     selectedDev,
@@ -241,7 +260,7 @@ export const assignAProject = ({
   }
 
   // updates remaining projects
-  remainingProjects = remainingProjects.filter((p) => p !== preferedProject);
+  return remainingProjects.filter((p) => p !== preferedProject);
 };
 
 export const getAssignments = (
@@ -259,7 +278,7 @@ export const getAssignments = (
   let remainingProjects = availableProjects;
 
   while (remainingProjects.length) {
-    assignAProject({
+    remainingProjects = assignAProject({
       preferences,
       projectsPoints,
       assignments,
