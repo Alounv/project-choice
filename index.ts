@@ -1,6 +1,6 @@
 import { getAssignments, Preferences, ProjectPoints } from "./getAssignments";
 
-const projectsP: ProjectPoints = {
+const projectsPoints: ProjectPoints = {
   A: 2,
   B: 5,
   C: 3,
@@ -18,7 +18,7 @@ const preferences: Preferences = {
   Aloun: ["A", "B", "C", "D", "E", "F", "G", "H"],
 };
 
-const results = getAssignments(projectsP, preferences);
+const results = getAssignments(projectsPoints, preferences);
 
 for (const name in results) {
   console.log(name, results[name]);
