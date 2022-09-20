@@ -1,5 +1,7 @@
 # project-choice
 
+Simple project to automate choice of project depending on storypoints.
+
 To install dependencies:
 
 ```bash
