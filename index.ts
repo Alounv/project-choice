@@ -1,43 +1,51 @@
-import { getAssignments, Preferences, ProjectPoints } from "./getAssignments";
+import { getAssignments, Preferences, ProjectPoints } from './getAssignments'
 
 const projectsPoints: ProjectPoints = {
-  "24.03. Group edition side panel": 8,
-  "24.02. learner side panel + invitation date": 5,
-  "24.06. decide diffusion mode of publication": 5,
-  "24.01. add filters and search to groups and learners": 3,
-  "24.04. platform invitation email": 3,
-  "24.09. setup hotjar": 1,
-};
+  '28.01. Import of translated content': 8,
+  '28.02. Add a SCORM modules to a publication diffused in Didask Platform': 5,
+  '28.03. Save completion analytics for Imported SCORM module': 5,
+  '28.04. Publication without showing progression': 3,
+  '28.05. Show expired publications in learner homepage + publish modal warning': 3,
+  '28.06. Correct group access control (publications and programs) + expirations': 3,
+  '28.07. Update module introduction page for courses': 3,
+  '28.08. Update final pages for elearning courses': 3
+}
 
 const preferences: Preferences = {
   Aurelie: [
-    "24.03. Group edition side panel",
-    "24.01. add filters and search to groups and learners",
-    "24.02. learner side panel + invitation date",
-    "24.04. platform invitation email",
-    "24.09. setup hotjar",
-    "24.06. decide diffusion mode of publication",
+    '28.01. Import of translated content',
+    '28.07. Update module introduction page for courses',
+    '28.08. Update final pages for elearning courses',
+    '28.04. Publication without showing progression',
+    '28.05. Show expired publications in learner homepage + publish modal warning',
+    '28.06. Correct group access control (publications and programs) + expirations',
+    '28.02. Add a SCORM modules to a publication diffused in Didask Platform',
+    '28.03. Save completion analytics for Imported SCORM module'
   ],
   Eddine: [
-    "24.01. add filters and search to groups and learners",
-    "24.02. learner side panel + invitation date",
-    "24.03. Group edition side panel",
-    "24.04. platform invitation email",
-    "24.06. decide diffusion mode of publication",
-    "24.09. setup hotjar",
+    '28.07. Update module introduction page for courses',
+    '28.08. Update final pages for elearning courses',
+    '28.06. Correct group access control (publications and programs) + expirations',
+    '28.04. Publication without showing progression',
+    '28.05. Show expired publications in learner homepage + publish modal warning',
+    '28.02. Add a SCORM modules to a publication diffused in Didask Platform',
+    '28.03. Save completion analytics for Imported SCORM module',
+    '28.01. Import of translated content'
   ],
   Aloun: [
-    "24.06. decide diffusion mode of publication",
-    "24.04. platform invitation email",
-    "24.03. Group edition side panel",
-    "24.02. learner side panel + invitation date",
-    "24.01. add filters and search to groups and learners",
-    "24.09. setup hotjar",
-  ],
-};
+    '28.02. Add a SCORM modules to a publication diffused in Didask Platform',
+    '28.03. Save completion analytics for Imported SCORM module',
+    '28.06. Correct group access control (publications and programs) + expirations',
+    '28.04. Publication without showing progression',
+    '28.05. Show expired publications in learner homepage + publish modal warning',
+    '28.07. Update module introduction page for courses',
+    '28.08. Update final pages for elearning courses',
+    '28.01. Import of translated content'
+  ]
+}
 
-const results = getAssignments(projectsPoints, preferences);
+const results = getAssignments(projectsPoints, preferences)
 
 for (const name in results) {
-  console.log(name, results[name]);
+  console.log(name, results[name])
 }
